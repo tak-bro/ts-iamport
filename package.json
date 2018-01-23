@@ -1,0 +1,11 @@
+{
+  "name": "ts-iamport",
+  "version": "0.0.0",
+  "description": "REST API client for I'mport; written by typescript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "axios": "^0.17.0",
+    "debug": "^3.0.1"
+  }
+}
