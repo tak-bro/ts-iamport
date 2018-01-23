@@ -4,8 +4,10 @@
   "description": "REST API client for I'mport; written by typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "dependencies": {
-    "axios": "^0.17.0",
-    "debug": "^3.0.1"
+  "devDependencies": {
+    "@types/bluebird": "^3.5.19",
+    "@types/core-js": "^0.9.45",
+    "axios": "^0.17.1",
+    "extendable-error": "^0.1.5"
   }
 }

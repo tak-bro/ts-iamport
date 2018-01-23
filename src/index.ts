@@ -1,1 +1,1 @@
-export { HelloWorld } from './hello-world';
+export { Iamport } from './iamport';
