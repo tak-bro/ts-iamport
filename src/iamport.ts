@@ -35,19 +35,19 @@ export class Iamport {
             this.axiosInstance.request(spec)
                 .then((res: AxiosResponse) => {
                     const { status, data } = res;
-                    const output = this.resSerializer(res);
+                    const output = this._resSerializer(res);
 
                     if (data.code !== 0)
                         return reject(new IamportError(data.message, output));
                     else
                         return resolve(output);
                 })
-                .catch(err => {
+                .catch((err: any) => {
                     if (!err.response)
                         return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', {}));
 
                     const { status, data } = err.response;
-                    const output = this.resSerializer(err.response);
+                    const output = this._resSerializer(err.response);
 
                     switch (status) {
                         case HTTP_OK:
@@ -84,7 +84,7 @@ export class Iamport {
         return res;
     }
 
-    private isExpiredToken() {
+    public isExpiredToken() {
         return !this.expireAt || Number(this.expireAt) <= Math.floor(Date.now() / 1000);
     }
 
@@ -260,7 +260,7 @@ export class Iamport {
      * @param {Object} [extra={}]
      * @returns {Promise} result
      */
-    cancelByImpUid(impUid, extra = {}) {
+    public cancelByImpUid(impUid, extra = {}) {
         const data = Object.assign(extra, { 'imp_uid': impUid });
         return this.cancel(data);
     }
@@ -274,7 +274,7 @@ export class Iamport {
      * @param {Object} [extra={}]
      * @returns {Promise} result
      */
-    cancelByMerchantUid(merchantUid, extra = {}) {
+    public cancelByMerchantUid(merchantUid, extra = {}) {
         const data = Object.assign(extra, { 'merchant_uid': merchantUid });
         return this.cancel(data);
     }
@@ -287,7 +287,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    createPreparedPayment(data = {}) {
+    public createPreparedPayment(data = {}) {
         const requiredParams = ['merchant_uid', 'amount'];
 
         if (!requiredParams.every(param => data.hasOwnProperty(param)))
@@ -311,7 +311,7 @@ export class Iamport {
      * @param {string} merchantUid
      * @returns {Promise} result
      */
-    getPreparedPayment(merchantUid) {
+    public getPreparedPayment(merchantUid) {
         const spec = {
             method: 'GET',
             url: `/payments/prepare/${merchantUid}`
@@ -329,7 +329,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    payOnetime(data: any) {
+    public payOnetime(data: any) {
         const requiredParams = [
             'merchant_uid', 'amount', 'card_number', 'expiry',
             'birth'
@@ -357,7 +357,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    paySubscription(data: any) {
+    public paySubscription(data: any) {
         const requiredParams = [
             'customer_uid', 'merchant_uid', 'amount'
         ];
@@ -383,7 +383,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    payForeign(data: any) {
+    public payForeign(data: any) {
         const requiredParams = [
             'merchant_uid', 'amount', 'card_number', 'expiry'
         ];
@@ -424,7 +424,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    createSubscription(data = {}) {
+    public createSubscription(data = {}) {
         const requiredParams = [
             'customer_uid', 'card_number', 'expiry', 'birth',
         ];
@@ -450,7 +450,7 @@ export class Iamport {
      * @param {string} customerUid
      * @returns {Promise} result
      */
-    getSubscription(customerUid) {
+    public getSubscription(customerUid) {
         const spec = {
             method: 'GET',
             url: `/subscribe/customers/${customerUid}`
@@ -468,7 +468,7 @@ export class Iamport {
      * @param {string} customerUid
      * @returns {Promise} result
      */
-    deleteSubscription(customerUid) {
+    public deleteSubscription(customerUid) {
         const spec = {
             method: 'DELETE',
             url: `/subscribe/customers/${customerUid}`
@@ -486,7 +486,7 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    createVbank(data = {}) {
+    public createVbank(data = {}) {
         const requiredParams = [
             'merchant_uid', 'amount', 'vbank_code', 'vbank_due', 'vbank_holder'
         ];
@@ -504,7 +504,7 @@ export class Iamport {
             .then(() => this._request(spec));
     }
 
-    private resSerializer(res: AxiosResponse) {
+    private _resSerializer(res: AxiosResponse) {
         return {
             status: res.status,
             message: res.data.message,
