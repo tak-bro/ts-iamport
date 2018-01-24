@@ -1,56 +1,39 @@
 import { IamportError } from './iamport-error';
 import * as Promise from 'bluebird';
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
 
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
 const HTTP_UNAUTHORIZED = 401;
 const HTTP_NOT_FOUND = 404;
-
+const AXIOS_CONFIG: AxiosRequestConfig = {
+    baseURL: 'https://api.iamport.kr',
+    timeout: 10000,
+    responseType: 'json'
+};
 
 export class Iamport {
-
     private token: string;
     private apiKey: string;
     private secret: string;
-    private host: string;
     private expireAt: string;
-    private client: AxiosInstance;
+    private axiosInstance: AxiosInstance;
 
-    /**
-     * Create an instance of Iamporter
-     *
-     * @param {string} [apiKey]
-     * @param {string} [secret]
-     * @param {string} [host]
-     */
-    constructor({
-                    apiKey = 'imp_apiKey',
-                    secret = 'ekKoeW8RyKuT0zgaZsUtXXTLQ4AhPFW3ZGseDA6bkA5lamv9OqDMnxyeB9wqOsuO9W3Mx9YSJ4dTqJ3f',
-                    host = 'https://api.iamport.kr',
-                } = {}) {
-
+    constructor(apiKey = 'imp_apiKey',
+                secret = 'ekKoeW8RyKuT0zgaZsUtXXTLQ4AhPFW3ZGseDA6bkA5lamv9OqDMnxyeB9wqOsuO9W3Mx9YSJ4dTqJ3f') {
         this.apiKey = apiKey;
         this.secret = secret;
-        this.host = host;
-        this.client = axios.create({
-            baseURL: this.host,
-            responseType: 'json',
-            timeout: 1000 * 30
-        });
+        this.axiosInstance = axios.create(AXIOS_CONFIG);
     }
 
-    _request(spec) {
-        spec.headers = {
-            'User-Agent': 'Iamporter.js'
-        };
-
-        if (!this.isExpiredToken())
+    private _request(spec) {
+        if (!this.isExpiredToken()) {
             spec.headers['Authorization'] = this.token;
+        }
 
         return new Promise((resolve, reject) => {
-            this.client.request(spec)
-                .then(res => {
+            this.axiosInstance.request(spec)
+                .then((res: AxiosResponse) => {
                     const { status, data } = res;
                     const output = this.resSerializer(res);
 
@@ -81,7 +64,7 @@ export class Iamport {
         });
     }
 
-    _updateToken() {
+    private _updateToken() {
         if (this.isExpiredToken()) {
             return this.getToken()
                 .then((res: AxiosResponse) => {
@@ -94,14 +77,14 @@ export class Iamport {
         }
     }
 
-    _validatePayment(amount, res) {
+    private _validatePayment(amount, res) {
         if (res.data.status !== 'paid' || res.data.amount !== amount)
             throw new IamportError('Fail to validate payment', res.data['fail_reason']);
 
         return res;
     }
 
-    isExpiredToken() {
+    private isExpiredToken() {
         return !this.expireAt || Number(this.expireAt) <= Math.floor(Date.now() / 1000);
     }
 
@@ -114,9 +97,9 @@ export class Iamport {
      * @param {string} [secret=this.secret]
      * @returns {Promise} result
      */
-    getToken(apiKey = this.apiKey, secret = this.secret) {
+    public getToken(apiKey = this.apiKey, secret = this.secret) {
         const spec = {
-            method: 'POST',
+            method: 'post',
             url: '/users/getToken',
             data: {
                 'imp_key': apiKey,
@@ -135,7 +118,7 @@ export class Iamport {
      * @param {string} impUid
      * @returns {Promise} result
      */
-    getCertification(impUid) {
+    public getCertification(impUid) {
         const spec = {
             method: 'GET',
             url: `/certifications/${impUid}`
@@ -152,7 +135,7 @@ export class Iamport {
      *
      * @returns {Promise} result
      */
-    deleteCertification(impUid) {
+    public deleteCertification(impUid) {
         const spec = {
             method: 'DELETE',
             url: `/certifications/${impUid}`
@@ -178,7 +161,7 @@ export class Iamport {
      * @param {string} impUid
      * @returns {Promise} result
      */
-    findByImpUid(impUid) {
+    public findByImpUid(impUid) {
         const spec = {
             method: 'GET',
             url: `/payments/${impUid}`
@@ -196,7 +179,7 @@ export class Iamport {
      * @param {string} merchantUid
      * @returns {Promise} result
      */
-    findByMerchantUid(merchantUid) {
+    public findByMerchantUid(merchantUid) {
         const spec = {
             method: 'GET',
             url: `/payments/find/${merchantUid}`
@@ -216,10 +199,7 @@ export class Iamport {
      * @param {string} [extra.status]
      * @returns {Promise} result
      */
-    findAllByMerchantUid(merchantUid, extra = {
-        status: ''
-    }) {
-
+    public findAllByMerchantUid(merchantUid, extra = { status: '' }) {
         const spec = {
             method: 'GET',
             url: `/payments/findAll/${merchantUid}/${extra.status}`
@@ -241,7 +221,7 @@ export class Iamport {
      * @param {} extra.to
      * @returns {Promise} result
      */
-    findAllByStatus(status = 'all', extra = {}) {
+    public findAllByStatus(status = 'all', extra = {}) {
         const spec = {
             method: 'GET',
             url: `/payments/status/${status}`,
@@ -260,7 +240,7 @@ export class Iamport {
      * @param {Object} [data={}]
      * @returns {Promise} result
      */
-    cancel(data = {}) {
+    public cancel(data = {}) {
         const spec = {
             method: 'POST',
             url: '/payments/cancel',

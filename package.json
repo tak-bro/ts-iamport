@@ -1,12 +1,11 @@
 {
   "name": "ts-iamport",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "REST API client for I'mport; written by typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "devDependencies": {
+  "dependencies": {
     "@types/bluebird": "^3.5.19",
-    "@types/core-js": "^0.9.45",
     "axios": "^0.17.1",
     "extendable-error": "^0.1.5"
   }

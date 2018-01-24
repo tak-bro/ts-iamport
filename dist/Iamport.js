@@ -3,38 +3,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var iamport_error_1 = require("./iamport-error");
 var Promise = require("bluebird");
 var axios_1 = require("axios");
+//import axios, { AxiosInstance, AxiosResponse } from 'axios';
 var HTTP_OK = 200;
 var HTTP_BAD_REQUEST = 400;
 var HTTP_UNAUTHORIZED = 401;
 var HTTP_NOT_FOUND = 404;
+var config = {
+    baseURL: 'https://api.iamport.kr',
+    timeout: 10000,
+    responseType: 'json'
+};
 var Iamport = /** @class */ (function () {
-    /**
-     * Create an instance of Iamporter
-     *
-     * @param {string} [apiKey]
-     * @param {string} [secret]
-     * @param {string} [host]
-     */
     function Iamport(_a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.apiKey, apiKey = _c === void 0 ? 'imp_apiKey' : _c, _d = _b.secret, secret = _d === void 0 ? 'ekKoeW8RyKuT0zgaZsUtXXTLQ4AhPFW3ZGseDA6bkA5lamv9OqDMnxyeB9wqOsuO9W3Mx9YSJ4dTqJ3f' : _d, _e = _b.host, host = _e === void 0 ? 'https://api.iamport.kr' : _e;
+        var _b = _a === void 0 ? {} : _a, _c = _b.apiKey, apiKey = _c === void 0 ? 'imp_apiKey' : _c, _d = _b.secret, secret = _d === void 0 ? 'ekKoeW8RyKuT0zgaZsUtXXTLQ4AhPFW3ZGseDA6bkA5lamv9OqDMnxyeB9wqOsuO9W3Mx9YSJ4dTqJ3f' : _d;
         this.apiKey = apiKey;
         this.secret = secret;
-        this.host = host;
-        this.client = axios_1.default.create({
-            baseURL: this.host,
-            responseType: 'json',
-            timeout: 1000 * 30
-        });
+        this.axiosInstance = axios_1.default.create(config);
     }
     Iamport.prototype._request = function (spec) {
         var _this = this;
-        spec.headers = {
-            'User-Agent': 'Iamporter.js'
-        };
-        if (!this.isExpiredToken())
+        if (!this.isExpiredToken()) {
             spec.headers['Authorization'] = this.token;
+        }
         return new Promise(function (resolve, reject) {
-            _this.client.request(spec)
+            _this.axiosInstance.request(spec)
                 .then(function (res) {
                 var status = res.status, data = res.data;
                 var output = _this.resSerializer(res);
@@ -97,7 +89,7 @@ var Iamport = /** @class */ (function () {
         if (apiKey === void 0) { apiKey = this.apiKey; }
         if (secret === void 0) { secret = this.secret; }
         var spec = {
-            method: 'POST',
+            method: 'post',
             url: '/users/getToken',
             data: {
                 'imp_key': apiKey,

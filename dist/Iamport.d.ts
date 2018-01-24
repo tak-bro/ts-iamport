@@ -4,20 +4,11 @@ export declare class Iamport {
     private token;
     private apiKey;
     private secret;
-    private host;
     private expireAt;
-    private client;
-    /**
-     * Create an instance of Iamporter
-     *
-     * @param {string} [apiKey]
-     * @param {string} [secret]
-     * @param {string} [host]
-     */
-    constructor({apiKey, secret, host}?: {
+    private axiosInstance;
+    constructor({apiKey, secret}?: {
         apiKey?: string;
         secret?: string;
-        host?: string;
     });
     _request(spec: any): Promise<{}>;
     _updateToken(): Promise<string>;
