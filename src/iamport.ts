@@ -26,71 +26,9 @@ export class Iamport {
         this.axiosInstance = axios.create(AXIOS_CONFIG);
     }
 
-    private _request(spec) {
-        if (!this.isExpiredToken()) {
-            spec.headers['Authorization'] = this.token;
-        }
-
-        return new Promise((resolve, reject) => {
-            this.axiosInstance.request(spec)
-                .then((res: AxiosResponse) => {
-                    const { status, data } = res;
-                    const output = this._resSerializer(res);
-
-                    if (data.code !== 0)
-                        return reject(new IamportError(data.message, output));
-                    else
-                        return resolve(output);
-                })
-                .catch((err: any) => {
-                    if (!err.response)
-                        return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', {}));
-
-                    const { status, data } = err.response;
-                    const output = this._resSerializer(err.response);
-
-                    switch (status) {
-                        case HTTP_OK:
-                        case HTTP_BAD_REQUEST:
-                            return reject(new IamportError(data.message, output));
-                        case HTTP_UNAUTHORIZED:
-                            return reject(new IamportError('아임포트 API 인증에 실패하였습니다.', output));
-                        case HTTP_NOT_FOUND:
-                            return resolve(output);
-                        default:
-                            return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', output));
-                    }
-                });
-        });
-    }
-
-    private _updateToken() {
-        if (this.isExpiredToken()) {
-            return this.getToken()
-                .then((res: AxiosResponse) => {
-                    this.token = res.data['access_token'];
-                    this.expireAt = res.data['expired_at'];
-                    return this.token;
-                });
-        } else {
-            return Promise.resolve(this.token);
-        }
-    }
-
-    private _validatePayment(amount, res) {
-        if (res.data.status !== 'paid' || res.data.amount !== amount)
-            throw new IamportError('Fail to validate payment', res.data['fail_reason']);
-
-        return res;
-    }
-
-    public isExpiredToken() {
-        return !this.expireAt || Number(this.expireAt) <= Math.floor(Date.now() / 1000);
-    }
-
     /**
      * API 토큰 요청
-     * GET - https://api.iamport.kr/users/getToken
+     * POST - https://api.iamport.kr/users/getToken
      * @see {@link https://api.iamport.kr/#!/authenticate/getToken}
      *
      * @param {string} [apiKey=this.apiKey]
@@ -144,14 +82,6 @@ export class Iamport {
         return this._updateToken()
             .then(() => this._request(spec));
     }
-
-    /**
-     * 에스크로 결제 배송정보 등록
-     * POST - https://api.iamport.kr/escrows/logis/{imp_uid}
-     * @see {@link https://api.iamport.kr/#!/escrow.logis/escrow_logis_save}
-     *
-     * @returns {Promise} result
-     */
 
     /**
      * 아임포트 고유 아이디로 결제 정보 조회
@@ -403,20 +333,6 @@ export class Iamport {
     }
 
     /**
-     * POST - https://api.iamport.kr/subscribe/payments/schedule
-     * @see {@link https://api.iamport.kr/#!/subscribe/schedule}
-     *
-     * @returns {Promise} result
-     */
-
-    /**
-     * POST - https://api.iamport.kr/subscribe/payments/unschedule
-     * @see {@link https://api.iamport.kr/#!/subscribe/unschedule}
-     *
-     * @returns {Promise} result
-     */
-
-    /**
      * 구매자 빌링키 발급
      * POST - https://api.iamport.kr/subscribe/customers/{customer_uid}
      * @see {@link https://api.iamport.kr/#!/subscribe.customer/customer_save}
@@ -504,6 +420,22 @@ export class Iamport {
             .then(() => this._request(spec));
     }
 
+    // TODO: Add below items
+    /**
+     * 에스크로 결제 배송정보 등록
+     * POST - https://api.iamport.kr/escrows/logis/{imp_uid}
+     * @see {@link https://api.iamport.kr/#!/escrow.logis/escrow_logis_save}
+     *
+     * @returns {Promise} result
+     */
+
+    /**
+     * POST - https://api.iamport.kr/subscribe/payments/schedule
+     * @see {@link https://api.iamport.kr/#!/subscribe/schedule}
+     *
+     * @returns {Promise} result
+     */
+
     private _resSerializer(res: AxiosResponse) {
         return {
             status: res.status,
@@ -513,4 +445,69 @@ export class Iamport {
         };
     }
 
+    private _request(spec) {
+        spec.headers = {
+            'User-Agent': 'Iamporter.js'
+        };
+
+        if (!this._isExpiredToken()) {
+            spec.headers['Authorization'] = this.token;
+        }
+
+        return new Promise((resolve, reject) => {
+            this.axiosInstance.request(spec)
+                .then((res: AxiosResponse) => {
+                    const { status, data } = res;
+                    const output = this._resSerializer(res);
+
+                    if (data.code !== 0)
+                        return reject(new IamportError(data.message, output));
+                    else
+                        return resolve(output);
+                })
+                .catch((err: any) => {
+                    if (!err.response)
+                        return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', {}));
+
+                    const { status, data } = err.response;
+                    const output = this._resSerializer(err.response);
+
+                    switch (status) {
+                        case HTTP_OK:
+                        case HTTP_BAD_REQUEST:
+                            return reject(new IamportError(data.message, output));
+                        case HTTP_UNAUTHORIZED:
+                            return reject(new IamportError('아임포트 API 인증에 실패하였습니다.', output));
+                        case HTTP_NOT_FOUND:
+                            return resolve(output);
+                        default:
+                            return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', output));
+                    }
+                });
+        });
+    }
+
+    private _updateToken() {
+        if (this._isExpiredToken()) {
+            return this.getToken()
+                .then((res: AxiosResponse) => {
+                    this.token = res.data['access_token'];
+                    this.expireAt = res.data['expired_at'];
+                    return this.token;
+                });
+        } else {
+            return Promise.resolve(this.token);
+        }
+    }
+
+    private _validatePayment(amount, res) {
+        if (res.data.status !== 'paid' || res.data.amount !== amount)
+            throw new IamportError('Fail to validate payment', res.data['fail_reason']);
+
+        return res;
+    }
+
+    private _isExpiredToken() {
+        return !this.expireAt || Number(this.expireAt) <= Math.floor(Date.now() / 1000);
+    }
 }
