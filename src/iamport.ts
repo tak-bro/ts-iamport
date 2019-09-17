@@ -35,8 +35,8 @@ export class Iamport {
      * @param {string} [secret=this.secret]
      * @returns {Promise} result
      */
-    public getToken(apiKey = this.apiKey, secret = this.secret) {
-        const spec = {
+    public getToken(apiKey: string = this.apiKey, secret: string = this.secret) {
+        const spec: AxiosRequestConfig = {
             method: 'post',
             url: '/users/getToken',
             data: {
@@ -56,8 +56,8 @@ export class Iamport {
      * @param {string} impUid
      * @returns {Promise} result
      */
-    public getCertification(impUid) {
-        const spec = {
+    public getCertification(impUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/certifications/${impUid}`
         };
@@ -73,8 +73,8 @@ export class Iamport {
      *
      * @returns {Promise} result
      */
-    public deleteCertification(impUid) {
-        const spec = {
+    public deleteCertification(impUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'DELETE',
             url: `/certifications/${impUid}`
         };
@@ -91,8 +91,8 @@ export class Iamport {
      * @param {string} impUid
      * @returns {Promise} result
      */
-    public findByImpUid(impUid) {
-        const spec = {
+    public findByImpUid(impUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/payments/${impUid}`
         };
@@ -109,8 +109,8 @@ export class Iamport {
      * @param {string} merchantUid
      * @returns {Promise} result
      */
-    public findByMerchantUid(merchantUid) {
-        const spec = {
+    public findByMerchantUid(merchantUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/payments/find/${merchantUid}`
         };
@@ -129,8 +129,8 @@ export class Iamport {
      * @param {string} [extra.status]
      * @returns {Promise} result
      */
-    public findAllByMerchantUid(merchantUid, extra = { status: '' }) {
-        const spec = {
+    public findAllByMerchantUid(merchantUid: string, extra: any = { status: '' }) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/payments/findAll/${merchantUid}/${extra.status}`
         };
@@ -151,8 +151,8 @@ export class Iamport {
      * @param {} extra.to
      * @returns {Promise} result
      */
-    public findAllByStatus(status = 'all', extra = {}) {
-        const spec = {
+    public findAllByStatus(status: string = 'all', extra: any = {}) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/payments/status/${status}`,
             params: extra
@@ -170,8 +170,8 @@ export class Iamport {
      * @param {Object} [data={}]
      * @returns {Promise} result
      */
-    public cancel(data = {}) {
-        const spec = {
+    public cancel(data: any = {}) {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/payments/cancel',
             data: data
@@ -190,8 +190,8 @@ export class Iamport {
      * @param {Object} [extra={}]
      * @returns {Promise} result
      */
-    public cancelByImpUid(impUid, extra = {}) {
-        const data = Object.assign(extra, { 'imp_uid': impUid });
+    public cancelByImpUid(impUid: string, extra: any = {}) {
+        const data: any = { ...extra, 'imp_uid': impUid };
         return this.cancel(data);
     }
 
@@ -204,8 +204,8 @@ export class Iamport {
      * @param {Object} [extra={}]
      * @returns {Promise} result
      */
-    public cancelByMerchantUid(merchantUid, extra = {}) {
-        const data = Object.assign(extra, { 'merchant_uid': merchantUid });
+    public cancelByMerchantUid(merchantUid: string, extra: any = {}) {
+        const data: any = { ...extra, 'merchant_uid': merchantUid };
         return this.cancel(data);
     }
 
@@ -217,13 +217,13 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    public createPreparedPayment(data = {}) {
+    public createPreparedPayment(data: any = {}) {
         const requiredParams = ['merchant_uid', 'amount'];
-
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
+        if (this._haveNotRequiredParams(requiredParams, data)) {
             return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/payments/prepare',
             data: data
@@ -241,8 +241,8 @@ export class Iamport {
      * @param {string} merchantUid
      * @returns {Promise} result
      */
-    public getPreparedPayment(merchantUid) {
-        const spec = {
+    public getPreparedPayment(merchantUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/payments/prepare/${merchantUid}`
         };
@@ -260,15 +260,12 @@ export class Iamport {
      * @returns {Promise} result
      */
     public payOnetime(data: any) {
-        const requiredParams = [
-            'merchant_uid', 'amount', 'card_number', 'expiry',
-            'birth'
-        ];
-
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
+        const requiredParams = ['merchant_uid', 'amount', 'card_number', 'expiry', 'birth'];
+        if (this._haveNotRequiredParams(requiredParams, data)) {
             return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/subscribe/payments/onetime',
             data: data
@@ -288,14 +285,12 @@ export class Iamport {
      * @returns {Promise} result
      */
     public paySubscription(data: any) {
-        const requiredParams = [
-            'customer_uid', 'merchant_uid', 'amount'
-        ];
-
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
+        const requiredParams = ['customer_uid', 'merchant_uid', 'amount'];
+        if (this._haveNotRequiredParams(requiredParams, data)) {
             return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/subscribe/payments/again',
             data: data
@@ -314,14 +309,12 @@ export class Iamport {
      * @returns {Promise} result
      */
     public payForeign(data: any) {
-        const requiredParams = [
-            'merchant_uid', 'amount', 'card_number', 'expiry'
-        ];
-
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
+        const requiredParams = ['merchant_uid', 'amount', 'card_number', 'expiry'];
+        if (this._haveNotRequiredParams(requiredParams, data)) {
             return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/subscribe/payments/foreign',
             data: data
@@ -340,15 +333,13 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    public createSubscription(data = {}) {
-        const requiredParams = [
-            'customer_uid', 'card_number', 'expiry', 'birth',
-        ];
-
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
+    public createSubscription(data: any = {}) {
+        const requiredParams = ['customer_uid', 'card_number', 'expiry', 'birth'];
+        if (this._haveNotRequiredParams(requiredParams, data)) {
             return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: `/subscribe/customers/${data['customer_uid']}`,
             data: data
@@ -366,8 +357,8 @@ export class Iamport {
      * @param {string} customerUid
      * @returns {Promise} result
      */
-    public getSubscription(customerUid) {
-        const spec = {
+    public getSubscription(customerUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'GET',
             url: `/subscribe/customers/${customerUid}`
         };
@@ -384,8 +375,8 @@ export class Iamport {
      * @param {string} customerUid
      * @returns {Promise} result
      */
-    public deleteSubscription(customerUid) {
-        const spec = {
+    public deleteSubscription(customerUid: string) {
+        const spec: AxiosRequestConfig = {
             method: 'DELETE',
             url: `/subscribe/customers/${customerUid}`
         };
@@ -402,15 +393,13 @@ export class Iamport {
      * @param {Object} data
      * @returns {Promise} result
      */
-    public createVbank(data = {}) {
-        const requiredParams = [
-            'merchant_uid', 'amount', 'vbank_code', 'vbank_due', 'vbank_holder'
-        ];
+    public createVbank(data: any = {}) {
+        const requiredParams = ['merchant_uid', 'amount', 'vbank_code', 'vbank_due', 'vbank_holder'];
+        if (this._haveNotRequiredParams(requiredParams, data)) {
+            return Promise.reject(new IamportError('파라미터 누락: ', requiredParams));
+        }
 
-        if (!requiredParams.every(param => data.hasOwnProperty(param)))
-            return Promise.reject(new IamportError('파라미터 누락:', requiredParams));
-
-        const spec = {
+        const spec: AxiosRequestConfig = {
             method: 'POST',
             url: '/vbanks',
             data: data
@@ -445,7 +434,7 @@ export class Iamport {
         };
     }
 
-    private _request(spec) {
+    private _request(spec: AxiosRequestConfig) {
         spec.headers = {
             'User-Agent': 'Iamporter.js'
         };
@@ -457,17 +446,19 @@ export class Iamport {
         return new Promise((resolve, reject) => {
             this.axiosInstance.request(spec)
                 .then((res: AxiosResponse) => {
-                    const { status, data } = res;
+                    const { data } = res;
                     const output = this._resSerializer(res);
 
-                    if (data.code !== 0)
+                    if (data.code !== 0) {
                         return reject(new IamportError(data.message, output));
-                    else
+                    } else {
                         return resolve(output);
+                    }
                 })
                 .catch((err: any) => {
-                    if (!err.response)
+                    if (!err.response) {
                         return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', {}));
+                    }
 
                     const { status, data } = err.response;
                     const output = this._resSerializer(err.response);
@@ -501,13 +492,19 @@ export class Iamport {
     }
 
     private _validatePayment(amount, res) {
-        if (res.data.status !== 'paid' || res.data.amount !== amount)
+        const failedToValidate = res.data.status !== 'paid' || res.data.amount !== amount;
+        if (failedToValidate) {
             throw new IamportError('Fail to validate payment', res.data['fail_reason']);
+        }
 
         return res;
     }
 
     private _isExpiredToken() {
         return !this.expireAt || Number(this.expireAt) <= Math.floor(Date.now() / 1000);
+    }
+
+    private _haveNotRequiredParams(requiredParams: any[], data: any) {
+        return !requiredParams.every(param => data.hasOwnProperty(param));
     }
 }
