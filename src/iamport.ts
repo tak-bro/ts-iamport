@@ -446,17 +446,19 @@ export class Iamport {
         return new Promise((resolve, reject) => {
             this.axiosInstance.request(spec)
                 .then((res: AxiosResponse) => {
-                    const { status, data } = res;
+                    const { data } = res;
                     const output = this._resSerializer(res);
 
-                    if (data.code !== 0)
+                    if (data.code !== 0) {
                         return reject(new IamportError(data.message, output));
-                    else
+                    } else {
                         return resolve(output);
+                    }
                 })
                 .catch((err: any) => {
-                    if (!err.response)
+                    if (!err.response) {
                         return reject(new IamportError('예기치 못한 오류가 발생하였습니다.', {}));
+                    }
 
                     const { status, data } = err.response;
                     const output = this._resSerializer(err.response);
@@ -490,8 +492,10 @@ export class Iamport {
     }
 
     private _validatePayment(amount, res) {
-        if (res.data.status !== 'paid' || res.data.amount !== amount)
+        const failedToValidate = res.data.status !== 'paid' || res.data.amount !== amount;
+        if (failedToValidate) {
             throw new IamportError('Fail to validate payment', res.data['fail_reason']);
+        }
 
         return res;
     }
