@@ -20,7 +20,7 @@
     "tak-bro",
     "env-tak"
   ],
-  "author": "tak-bro",
+  "author": "tak-bro <env.tak@gmail.com> (https://env-tak.github.io)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tak-bro/ts-iamport/issues"
