@@ -1,27 +1,29 @@
 {
   "name": "ts-iamport",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "REST API client for I'mport; written by typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
     "@types/bluebird": "^3.5.19",
-    "axios": "^0.17.1",
+    "axios": ">=0.18.1",
     "extendable-error": "^0.1.5"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/njir/ts-iamport.git"
+    "url": "git+https://github.com/tak-bro/ts-iamport.git"
   },
   "keywords": [
     "iamport",
     "iamporter",
-    "njir"
+    "typescript",
+    "tak-bro",
+    "env-tak"
   ],
-  "author": "njir",
+  "author": "tak-bro",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/njir/ts-iamport/issues"
+    "url": "https://github.com/tak-bro/ts-iamport/issues"
   },
-  "homepage": "https://github.com/njir/suji-generator#readme"
+  "homepage": "https://github.com/tak-bro/ts-iamport/#readme"
 }
